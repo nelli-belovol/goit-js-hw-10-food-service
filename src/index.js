@@ -2,53 +2,37 @@ import './sass/main.scss';
 import refs from './js/refs.js';
 import menu from './menu.json';
 import template from './templates/menu.hbs';
-console.log(menu);
-//
+import { load, save } from './js/storage.js';
+
 const Theme = {
   LIGHT: 'light-theme',
   DARK: 'dark-theme',
 };
 
-//---------------------------------------//                       try...catch
-
 refs.body.classList.add(Theme.LIGHT);
 
-// При изменении темы, необходимо добавлять на
-// элемент body класс light - theme или dark - theme.
-function changeTheme() {
-  if (refs.body.classList.contains(Theme.LIGHT)) {
-    localStorage.setItem('ui-theme', JSON.stringify(Theme.DARK));
-    refs.body.classList.replace(Theme.LIGHT, Theme.DARK);
-    refs.checkBox.checked = true;
-  } else {
-    localStorage.setItem('ui-theme', JSON.stringify(Theme.LIGHT));
-    refs.body.classList.replace(Theme.DARK, Theme.LIGHT);
-    refs.checkBox.checked = false;
-  }
+if (load('ui-theme') === Theme.DARK) {
+  refs.checkBox.checked = true;
+  setDarkTheme();
 }
 
-refs.checkBox.addEventListener('change', () => {
-  changeTheme();
+function setDarkTheme() {
+  refs.body.classList.replace(Theme.LIGHT, Theme.DARK);
+  save('ui-theme', Theme.DARK);
+}
+
+function setLightTheme() {
+  refs.body.classList.replace(Theme.DARK, Theme.LIGHT);
+  save('ui-theme', Theme.LIGHT);
+}
+
+refs.checkBox.addEventListener('change', event => {
+  if (event.target.checked) {
+    setDarkTheme();
+  } else {
+    setLightTheme();
+  }
 });
 
-// По умолчанию тема светлая.
-window.onload = () => {
-  const currentTheme = JSON.parse(localStorage.getItem('ui-theme')); // почему пришлось парсить, если это строка???
-
-  refs.body.classList.add(currentTheme);
-  if (currentTheme === Theme.DARK) {
-    refs.checkBox.checked = true;
-  } else {
-    refs.checkBox.checked = false; // после обновления остается правильное положение чекбокса, но заново срабатывает со второго раза
-  }
-};
-
-// Выбранная тема должна сохраняться между перезагрузками страницы.
-// Для хранения темы используй localStorage.
-
-// Если при загрузке страницы тема тёмная, не забудь поставить
-// свойство checked у чекбокса #theme -switch-toggle в true,
-// чтобы ползунок сдвинулся в правильное положение.
 const items = template(menu);
 refs.menuList.insertAdjacentHTML('beforeend', items);
-console.log(refs.menuList);
